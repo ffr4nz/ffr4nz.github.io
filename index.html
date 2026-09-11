@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fran Gómez | Threat Assessment Research</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.23.0/cytoscape.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Dark Mode Variables (Default) */
+            --bg-base: #09090b;
+            --bg-panel: #18181b;
+            --accent-primary: #ffffff;
+            --accent-secondary: #a1a1aa;
+            --highlight: #22c55e;
+            --border-color: #27272a;
+            --panel-shadow: rgba(0,0,0,0.8);
+        }
+
+        body.light-mode {
+            /* Light Mode Variables */
+            --bg-base: #f4f4f5;
+            --bg-panel: #ffffff;
+            --accent-primary: #18181b;
+            --accent-secondary: #52525b;
+            --highlight: #16a34a;
+            --border-color: #d4d4d8;
+            --panel-shadow: rgba(0,0,0,0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-base);
+            color: var(--accent-secondary);
+            font-family: 'Fira Code', monospace;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        #cy {
+            width: 70%;
+            height: 100%;
+        }
+
+        #panel {
+            width: 30%;
+            height: 100%;
+            background-color: var(--bg-panel);
+            border-left: 1px solid var(--border-color);
+            padding: 30px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            box-shadow: -10px 0 30px var(--panel-shadow);
+            z-index: 10;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .header-section {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        h1 {
+            color: var(--accent-primary);
+            font-size: 1.6rem;
+            margin: 0 0 5px 0;
+            font-weight: 600;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            color: var(--highlight);
+            font-size: 0.85rem;
+            margin: 0;
+        }
+
+        #theme-toggle {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--accent-primary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px 8px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        #theme-toggle:hover {
+            background-color: var(--border-color);
+        }
+
+        #dynamic-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+            transition: opacity 0.2s ease;
+        }
+
+        #dynamic-content::-webkit-scrollbar { width: 4px; }
+        #dynamic-content::-webkit-scrollbar-track { background: transparent; }
+        #dynamic-content::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 2px; }
+
+        .detail-title { color: var(--accent-primary); font-size: 1.2rem; margin-top: 0; margin-bottom: 5px;}
+        .detail-meta { font-size: 0.8rem; color: var(--highlight); margin-bottom: 15px; display: block; }
+        .detail-body { line-height: 1.5; font-size: 0.9rem; }
+        .detail-body ul { padding-left: 15px; margin-top: 10px; }
+        .detail-body li { margin-bottom: 8px; }
+        .detail-body a { color: #60a5fa; text-decoration: none; }
+        .detail-body a:hover { text-decoration: underline; }
+        body.light-mode .detail-body a { color: #2563eb; }
+
+        .instruction {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            color: var(--accent-secondary);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="cy"></div>
+
+    <div id="panel">
+        <div class="header-section">
+            <div>
+                <h1>Fran Gómez</h1>
+                <p class="subtitle">Threat Assessment Research | CyberSec Architect</p>
+            </div>
+            <button id="theme-toggle" title="Toggle Theme">☀️</button>
+        </div>
+        <div id="dynamic-content">
+            <div class="instruction">
+                > System ready.<br>
+                > Awaiting node selection...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const nodeData = {
+            'fran': { title: 'Fran Gómez', meta: 'Profile Overview', body: '<p>Cybersecurity researcher with over 15 years of experience in application security, cloud threats, DNS abuse, and real-time detection. Speaker at Black Hat, RootedCON, CONCERT, and NIAS.</p>' },
+            'leet': { title: 'LEET Security', meta: 'Head of Threat Assessment Research | Oct 2025 - Present', body: '<p>Currently leading threat assessment research in Madrid, Spain.</p>' },
+            'looquer': { title: 'Mr.LOOQUER', meta: 'Co-Founder | Feb 2016 - Present', body: '<ul><li><strong>Mr.LOOQUER Rating:</strong> Real-time risk scoring system for public-facing assets.</li><li><strong>IPLake:</strong> Global database mapping IPv4 and IPv6 relationships.</li><li><strong>IOCFeed:</strong> Industry\'s first daily dual-stack threat intelligence feed.</li><li>Engineered automated scanning pipeline using AWS Lambda and GCP Functions.</li></ul>' },
+            'devo': { title: 'Devo', meta: 'Manager, Security Content Research | Oct 2021 - Sep 2025', body: '<p>Led strategy for detection/response across the cyber kill chain.</p><ul><li>Developed the <strong>Technique Risk Score</strong> for MITRE ATT&CK.</li><li>Built detection-as-code, Sigma rules, and MISP workflows.</li></ul>' },
+            'telefonica': { title: 'Telefónica Digital España', meta: 'Cybersecurity Research | Oct 2007 - Sep 2016', body: '<p>Conceived and implemented Telefónica\'s first global monitoring service. Specializing in pen-testing, auditing mobile networks (GGSN, SGSN), and assessing core network services like DNS, DHCP, and RADIUS.</p>' },
+            'unir': { title: 'UNIR', meta: 'Associate Professor | Oct 2025 - Present', body: '<p>Associate Professor at Universidad Internacional de La Rioja.</p>' },
+            'eoi': { title: 'Escuela de Organización Industrial', meta: 'Associate Professor | Sep 2017 - Jul 2024', body: '<p>Taught stream processing pipelines (Apache Spark, Flink) to detect DDoS, malware, and suspicious patterns in real-time.</p>' },
+            'utad': { title: 'U-tad', meta: 'Associate Professor | Feb 2017 - Apr 2022', body: '<p>Master\'s program in Big Data and Business Analytics. Focused on writing detection rules and automating incident response workflows.</p>' },
+            'sinfonier': { title: 'Sinfonier', meta: 'Open-Source Project', body: '<p>Creator of Sinfonier, an open-source stream-processing platform for SOCs allowing analysts to orchestrate real-time data processing pipelines.</p>' },
+            'shhhdeploy': { title: 'ShhhDeploy', meta: 'Architecture Decision Wizard', body: '<p>A web-based knowledge base and architecture advisory tool. It features a streamlined 10-question matrix designed to provide red teams with the best strategic deployment plans for their infrastructure.</p>' },
+            'threat_map': { title: 'Real-Time Threat Mapping', meta: 'Development Project', body: '<p>A real-time threat visualization application utilizing a Python FastAPI backend and WebSockets, rendering data on an interactive Leaflet.js frontend. The pipeline is continuously fed by n8n webhooks.</p>' },
+            'ipv6_ctf': { title: 'IPv6 CTF Architecture', meta: 'Security Education', body: '<p>Engineered an IPv6-focused Capture the Flag competition. Built 20 custom packet-crafting challenges with Scapy-based solver scripts and live terminal flag monitoring utilizing the `rich` Python library.</p>' },
+            'plecost': { title: 'Plecost Contributions', meta: 'Open-Source Contributor', body: '<p>Developed and integrated active guardrail testing features into the open-source WordPress security scanner, Plecost.</p>' },
+            'podcast': { title: 'La Redada (Cadena SER)', meta: 'Podcast Contributor | Jul 2017 - Mar 2021', body: '<p>Broke down complex cybersecurity topics for broad audiences, covering ransomware, cyber warfare, and historical hacking events.</p>' },
+            'ai_llm': { title: 'AI & Local LLMs', meta: 'Workflow Automation', body: '<p>Integration of local AI environments using LM Studio, AnythingLLM, and Ollama to route security context into retrieval-augmented generation pipelines and n8n workflows.</p>' },
+            'dev_stack': { title: 'Development Stack', meta: 'Tooling & Languages', body: '<p>Heavy focus on Python (default language), FastAPI, Flask, Docker, and automation orchestration using n8n. Frontend visualization experience utilizing Cytoscape.js and Leaflet.js.</p>' },
+            'intel_frameworks': { title: 'Intelligence & Frameworks', meta: 'Threat Research', body: '<p>Deep expertise mapping attack flows to MITRE ATT&CK, writing and integrating Sigma rules, CAPEC, and managing automated security orchestration.</p>' },
+            'net_sec': { title: 'Network & Protocol Analysis', meta: 'Core Skills', body: '<p>Advanced dual-stack (IPv4/IPv6) threat intelligence. Expertise in DNS abuse, open-source intelligence (OSINT) gathering, and Tor hidden services configuration.</p>' },
+            'awards': { title: 'Honors & Awards', meta: 'Recognition', body: '<ul><li>Premios a la Innovación (Desarrollo Móvil)</li><li>VIII Premio de Nuevas Aplicaciones para Internet (NAI)</li><li>Cybersecurity Ventures 1st Ed. (2017-2018)</li><li>Ciberemprende 1st Ed. (2016-2017)</li></ul>' },
+            'pubs': { title: 'Publications & Talks', meta: 'Industry Contributions', body: '<ul><li><strong>RFC/BCP:</strong> Preventing use Nameservers as malware distribution platform</li><li><strong>FIRST:</strong> Threats Information Sharing using Sinfonier</li><li><strong>BLACK HAT:</strong> Video Killed the Text Star: OSINT Approach</li><li><strong>RootedCON:</strong> Cloud Malware Distribution</li></ul>' }
+        };
+
+        const elementsData = [
+            { data: { id: 'fran', label: 'Fran Gómez', type: 'core' } },
+            { data: { id: 'cat_exp', label: 'Industry', type: 'category' } },
+            { data: { id: 'cat_acad', label: 'Academia', type: 'category' } },
+            { data: { id: 'cat_proj', label: 'Projects & Code', type: 'category' } },
+            { data: { id: 'cat_skills', label: 'Skills & Tech', type: 'category' } },
+            { data: { id: 'cat_recog', label: 'Awards & Pubs', type: 'category' } },
+            { data: { source: 'fran', target: 'cat_exp' } },
+            { data: { source: 'fran', target: 'cat_acad' } },
+            { data: { source: 'fran', target: 'cat_proj' } },
+            { data: { source: 'fran', target: 'cat_skills' } },
+            { data: { source: 'fran', target: 'cat_recog' } },
+            { data: { id: 'leet', label: 'LEET Security', type: 'detail' } },
+            { data: { id: 'looquer', label: 'Mr.LOOQUER', type: 'detail' } },
+            { data: { id: 'devo', label: 'Devo', type: 'detail' } },
+            { data: { id: 'telefonica', label: 'Telefónica', type: 'detail' } },
+            { data: { source: 'cat_exp', target: 'leet' } },
+            { data: { source: 'cat_exp', target: 'looquer' } },
+            { data: { source: 'cat_exp', target: 'devo' } },
+            { data: { source: 'cat_exp', target: 'telefonica' } },
+            { data: { id: 'unir', label: 'UNIR', type: 'detail' } },
+            { data: { id: 'eoi', label: 'EOI', type: 'detail' } },
+            { data: { id: 'utad', label: 'U-tad', type: 'detail' } },
+            { data: { id: 'podcast', label: 'Cadena SER', type: 'detail' } },
+            { data: { source: 'cat_acad', target: 'unir' } },
+            { data: { source: 'cat_acad', target: 'eoi' } },
+            { data: { source: 'cat_acad', target: 'utad' } },
+            { data: { source: 'cat_acad', target: 'podcast' } },
+            { data: { id: 'sinfonier', label: 'Sinfonier', type: 'detail' } },
+            { data: { id: 'shhhdeploy', label: 'ShhhDeploy', type: 'detail' } },
+            { data: { id: 'threat_map', label: 'Threat Mapping App', type: 'detail' } },
+            { data: { id: 'ipv6_ctf', label: 'IPv6 CTF Architecture', type: 'detail' } },
+            { data: { id: 'plecost', label: 'Plecost Guardrails', type: 'detail' } },
+            { data: { source: 'cat_proj', target: 'sinfonier' } },
+            { data: { source: 'cat_proj', target: 'shhhdeploy' } },
+            { data: { source: 'cat_proj', target: 'threat_map' } },
+            { data: { source: 'cat_proj', target: 'ipv6_ctf' } },
+            { data: { source: 'cat_proj', target: 'plecost' } },
+            { data: { id: 'ai_llm', label: 'AI & Local LLMs', type: 'detail' } },
+            { data: { id: 'dev_stack', label: 'Python Stack', type: 'detail' } },
+            { data: { id: 'intel_frameworks', label: 'MITRE & Intel', type: 'detail' } },
+            { data: { id: 'net_sec', label: 'Network & OSINT', type: 'detail' } },
+            { data: { source: 'cat_skills', target: 'ai_llm' } },
+            { data: { source: 'cat_skills', target: 'dev_stack' } },
+            { data: { source: 'cat_skills', target: 'intel_frameworks' } },
+            { data: { source: 'cat_skills', target: 'net_sec' } },
+            { data: { id: 'awards', label: 'Awards', type: 'detail' } },
+            { data: { id: 'pubs', label: 'Publications', type: 'detail' } },
+            { data: { source: 'cat_recog', target: 'awards' } },
+            { data: { source: 'cat_recog', target: 'pubs' } }
+        ];
+
+        // --- Stylesheets for Themes ---
+        const darkStyle = [
+            { selector: 'node', style: { 'background-color': '#27272a', 'label': 'data(label)', 'color': '#a1a1aa', 'font-size': '10px', 'font-family': 'Fira Code', 'text-valign': 'bottom', 'text-margin-y': '6px', 'border-width': 2, 'border-color': '#3f3f46', 'transition-property': 'background-color, border-color, color', 'transition-duration': '0.2s' } },
+            { selector: 'node[type="core"]', style: { 'background-color': '#ffffff', 'color': '#ffffff', 'width': '40px', 'height': '40px', 'font-size': '12px', 'font-weight': 'bold', 'border-color': '#ffffff' } },
+            { selector: 'node[type="category"]', style: { 'shape': 'hexagon', 'background-color': '#18181b', 'border-color': '#71717a', 'width': '25px', 'height': '25px', 'color': '#e4e4e7' } },
+            { selector: 'node:selected', style: { 'border-color': '#22c55e', 'border-width': 3, 'background-color': '#14532d', 'color': '#22c55e' } },
+            { selector: 'edge', style: { 'width': 1, 'line-color': '#3f3f46', 'curve-style': 'bezier', 'target-arrow-shape': 'triangle', 'target-arrow-color': '#3f3f46', 'arrow-scale': 0.7 } }
+        ];
+
+        const lightStyle = [
+            { selector: 'node', style: { 'background-color': '#e4e4e7', 'label': 'data(label)', 'color': '#52525b', 'font-size': '10px', 'font-family': 'Fira Code', 'text-valign': 'bottom', 'text-margin-y': '6px', 'border-width': 2, 'border-color': '#d4d4d8', 'transition-property': 'background-color, border-color, color', 'transition-duration': '0.2s' } },
+            { selector: 'node[type="core"]', style: { 'background-color': '#18181b', 'color': '#18181b', 'width': '40px', 'height': '40px', 'font-size': '12px', 'font-weight': 'bold', 'border-color': '#18181b' } },
+            { selector: 'node[type="category"]', style: { 'shape': 'hexagon', 'background-color': '#ffffff', 'border-color': '#a1a1aa', 'width': '25px', 'height': '25px', 'color': '#3f3f46' } },
+            { selector: 'node:selected', style: { 'border-color': '#16a34a', 'border-width': 3, 'background-color': '#dcfce7', 'color': '#15803d' } },
+            { selector: 'edge', style: { 'width': 1, 'line-color': '#d4d4d8', 'curve-style': 'bezier', 'target-arrow-shape': 'triangle', 'target-arrow-color': '#d4d4d8', 'arrow-scale': 0.7 } }
+        ];
+
+        var cy = cytoscape({
+            container: document.getElementById('cy'),
+            elements: elementsData,
+            style: darkStyle,
+            layout: {
+                name: 'concentric',
+                fit: true,
+                padding: 50,
+                startAngle: 3 / 2 * Math.PI, // Starts nodes at the top
+                sweep: undefined,
+                clockwise: true,
+                equidistant: false,
+                minNodeSpacing: 70, // Forces space between nodes to prevent overlap
+                avoidOverlap: true,
+                nodeDimensionsIncludeLabels: true,
+
+                // This function assigns nodes to specific rings based on their type
+                concentric: function(node) {
+                    if (node.data('type') === 'core') return 3;     // Center ring
+                    if (node.data('type') === 'category') return 2; // Middle ring
+                    return 1;                                       // Outer ring
+                },
+
+                // Ensures distinct levels for the values 1, 2, and 3
+                levelWidth: function(nodes) {
+                    return 1;
+                }
+            },
+            userZoomingEnabled: true,
+            minZoom: 0.4,
+            maxZoom: 3.0
+        });
+
+        // --- Theme Toggle Logic ---
+        const themeToggle = document.getElementById('theme-toggle');
+        let isDarkMode = true;
+
+        themeToggle.addEventListener('click', () => {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('light-mode');
+            themeToggle.innerText = isDarkMode ? '☀️' : '🌙';
+            cy.style(isDarkMode ? darkStyle : lightStyle);
+        });
+
+        // --- Interaction Logic ---
+        const dynamicContent = document.getElementById('dynamic-content');
+
+        cy.on('tap', 'node', function(evt){
+            const node = evt.target;
+            const id = node.id();
+            const data = nodeData[id];
+            const nodeType = node.data('type');
+
+            cy.animate({
+                fit: {
+                    eles: node.closedNeighborhood(), // Gets the node + all connected edges and adjacent nodes
+                    padding: 70                      // Adds a nice margin around the edges of the screen
+                }
+            }, { duration: 350, easing: 'ease-out-quad' });
+
+            dynamicContent.style.opacity = 0;
+
+            setTimeout(() => {
+                if (nodeType === 'category') {
+                    // Dynamically fetch all outgoing nodes connected to this category
+                    const children = node.outgoers('node');
+                    let listHtml = '<ul>';
+                    children.forEach(child => {
+                        listHtml += `<li>${child.data('label')}</li>`;
+                    });
+                    listHtml += '</ul>';
+
+                    dynamicContent.innerHTML = `
+                        <h2 class="detail-title">${node.data('label')}</h2>
+                        <span class="detail-meta">Category Group</span>
+                        <div class="detail-body">
+                            <p>Associated items in this category:</p>
+                            ${listHtml}
+                        </div>
+                    `;
+                } else if (data) {
+                    // Render detailed nodes
+                    dynamicContent.innerHTML = `
+                        <h2 class="detail-title">${data.title}</h2>
+                        <span class="detail-meta">${data.meta}</span>
+                        <div class="detail-body">${data.body}</div>
+                    `;
+                } else {
+                    // Fallback to clear the panel if an undefined node is clicked
+                    dynamicContent.innerHTML = `
+                        <div class="instruction">
+                            > Select a node in the graph to view intelligence details.
+                        </div>
+                    `;
+                }
+                dynamicContent.style.opacity = 1;
+            }, 200);
+        });
+
+        cy.on('mouseover', 'node', function(evt) { document.body.style.cursor = 'pointer'; });
+        cy.on('mouseout', 'node', function(evt) { document.body.style.cursor = 'default'; });
+    </script>
+</body>
+</html>
