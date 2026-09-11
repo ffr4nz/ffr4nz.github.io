@@ -92,6 +92,9 @@
             padding: 5px 8px;
             border-radius: 6px;
             transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         #theme-toggle:hover {
@@ -127,6 +130,26 @@
             color: var(--accent-secondary);
             font-size: 0.9rem;
         }
+
+        /* --- Responsive Media Query for Mobile/Tablets --- */
+        @media (max-width: 900px) {
+            body {
+                flex-direction: column;
+                height: 100vh;
+                overflow: auto;
+            }
+            #cy {
+                width: 100%;
+                height: 55vh;
+            }
+            #panel {
+                width: 100%;
+                height: 45vh;
+                border-left: none;
+                border-top: 1px solid var(--border-color);
+                box-shadow: 0 -10px 30px var(--panel-shadow);
+            }
+        }
     </style>
 </head>
 <body>
@@ -139,7 +162,9 @@
                 <h1>Fran Gómez | @ffranz </h1>
                 <p class="subtitle">Head of Threat Assessment Research at @LEETSecurity | OSINT, AppSec & Threat Intel | DNS & IPv6 Security | Founder of @MrLOOQUER | Creator of @Sinfonier </p>
             </div>
-            <button id="theme-toggle" title="Toggle Theme">☀</button>
+            <button id="theme-toggle" title="Toggle Theme">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+            </button>
         </div>
         <div id="dynamic-content">
             <div class="instruction">
@@ -279,6 +304,12 @@
             maxZoom: 3.0
         });
 
+        // Ensure graph resizes properly on window resize / orientation change
+        window.addEventListener('resize', () => {
+            cy.resize();
+            cy.fit();
+        });
+
         // Load landing node data on startup
         window.onload = function() {
             const landingData = nodeData['fran'];
@@ -298,8 +329,8 @@
             isDarkMode = !isDarkMode;
             document.body.classList.toggle('light-mode');
             themeToggle.innerHTML = isDarkMode
-                                            ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>'
-                                            : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>';
+                ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>'
+                : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>';
             cy.style(isDarkMode ? darkStyle : lightStyle);
         });
 
